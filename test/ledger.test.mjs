@@ -1,4 +1,4 @@
-// node --test web/test  —— 앱(Kotlin)이 만든 QR 글자를 이 페이지가 같은 값으로 푸는지 고정한다.
+// cd web && node --test  —— 앱(Kotlin)이 만든 QR 글자를 이 페이지가 같은 값으로 푸는지 고정한다.
 // 같은 VECTOR 를 core 의 QrContractTest 도 푼다. 한쪽 형식이 바뀌면 둘 중 하나가 깨진다.
 import { test } from "node:test";
 import assert from "node:assert/strict";
