@@ -31,6 +31,17 @@ test("서식 CSV 는 BOM·칸 순서·합계를 앱과 같게 쓴다", async () 
   assert.ok(csv.includes("업무사용비율(%),91.84\r\n"));
 });
 
+test("수식으로 시작하는 글은 엑셀이 수식으로 읽지 않게 막는다", async () => {
+  const l = await decode(VECTOR);
+  l.profile.companyName = '=HYPERLINK("http://x","y")';
+  l.drivers[0].name = "@SUM(A1)";
+  l.drivers[0].dept = "-부서";
+  const csv = toCsv([l]);
+  assert.ok(csv.includes(`"'=HYPERLINK(""http://x"",""y"")"`), csv);
+  assert.ok(csv.includes(",'-부서,'@SUM(A1),"), csv);
+  assert.ok(csv.includes(",12345.0,12357.4,"), "숫자 칸은 그대로");
+});
+
 test("합계와 비율", () => {
   assert.deepEqual(summarize([]), { total: 0, commute: 0, business: 0, use: 0, ratio: 0 });
   assert.equal(km(5), "0.5");

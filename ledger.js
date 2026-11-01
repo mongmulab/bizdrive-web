@@ -109,7 +109,15 @@ export function fiscalYearOf(year, month, startMonth) {
   return { key: `${startYear}-${pad(startMonth)}`, label: `${startYear}.${pad(startMonth)} ~ ${endYear}.${pad(endMonth)}` };
 }
 
-const cell = (s) => (/[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s);
+/**
+ * CSV 한 칸. 쉼표·따옴표·줄바꿈은 따옴표로 감싼다. 숫자가 아닌 글이 = + - @ 탭으로 시작하면 앞에 ' 를 붙인다 ——
+ * QR 은 누구나 만들 수 있어, 상호·이름에 수식을 넣은 QR 을 받아 엑셀로 열면 수식이 돌 수 있다(CSV 수식 주입)
+ */
+const cell = (v) => {
+  let s = String(v);
+  if (/^[=+\-@\t\r]/.test(s) && !/^-?\d+(\.\d+)?$/.test(s)) s = "'" + s;
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
 
 /** 앱의 LedgerCsv 와 같은 칸 순서. 엑셀이 한글을 읽도록 BOM 을 붙인다 */
 export function toCsv(ledgers) {
