@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>BizDrive 운행기록부</title>
+<meta name="description" content="차 화면의 QR 을 찍으면 업무용승용차 운행기록부 서식을 휴대폰 안에서 만들어 줍니다. 데이터는 서버로 가지 않습니다.">
+<style>
+:root{
+  --bg:#f1f4f7;--surface:#fff;--text:#12161b;--muted:#3e4752;--line:#d5dbe2;
+  --primary:#0b5cad;--on-primary:#fff;--soft:#dcebfb;--commute:#0b5cad;--business:#1b7a43;--warn:#9a5200;--warn-soft:#fdf0e0;
+  --radius:16px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101418;--surface:#1a2027;--text:#eceff3;--muted:#c3cbd5;--line:#333d48;
+    --primary:#7ab8ff;--on-primary:#0b0f14;--soft:#173a5e;--commute:#7ab8ff;--business:#6fd39a;--warn:#ffb454;--warn-soft:#3a2a12;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101418;--surface:#1a2027;--text:#eceff3;--muted:#c3cbd5;--line:#333d48;
+  --primary:#7ab8ff;--on-primary:#0b0f14;--soft:#173a5e;--commute:#7ab8ff;--business:#6fd39a;--warn:#ffb454;--warn-soft:#3a2a12;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+main{max-width:960px;margin:0 auto;padding:16px 16px 48px}
+header{display:flex;align-items:center;gap:12px;padding:8px 0 16px}
+.mark{width:40px;height:40px;border-radius:10px;background:#0b5cad;display:grid;place-items:center;flex:none}
+h1{font-size:20px;margin:0}
+.sub{color:var(--muted);font-size:14px;margin:0}
+.card{background:var(--surface);border-radius:var(--radius);padding:20px;margin:0 0 16px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.card h2{font-size:18px;margin:0 0 12px}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media (min-width:640px){.kpis{grid-template-columns:repeat(4,1fr)}}
+.kpi{background:var(--bg);border-radius:12px;padding:12px;min-width:0}
+.kpi b{display:block;font-size:22px}
+.kpi span{color:var(--muted);font-size:13px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+dl{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;margin:0}
+dt{color:var(--muted)}dd{margin:0}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+button,.btn{appearance:none;border:0;border-radius:12px;padding:14px 18px;font:600 16px/1 inherit;cursor:pointer;min-height:48px}
+.primary{background:var(--primary);color:var(--on-primary)}
+.ghost{background:transparent;color:var(--primary);border:1.5px solid var(--line)}
+button:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+.table-wrap{overflow-x:auto;max-width:100%}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:right;white-space:nowrap}
+th{background:var(--bg);font-weight:600;color:var(--muted)}
+th:nth-child(-n+3),td:nth-child(-n+3),td:last-child,th:last-child{text-align:left}
+.flag{color:var(--warn);font-size:13px}
+.notice{background:var(--warn-soft);color:var(--text);border-radius:12px;padding:12px 14px;margin:0 0 16px}
+.steps{margin:0;padding-left:20px}.steps li{margin:4px 0}
+.months{list-style:none;margin:0;padding:0}
+.months li{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+.privacy{color:var(--muted);font-size:13px}
+.hidden{display:none}
+@media print{
+  @page{size:A4 landscape;margin:12mm}
+  body{background:#fff;color:#000;font-size:11px}
+  header,.actions,.no-print,.notice{display:none!important}
+  .card{box-shadow:none;padding:0;margin:0 0 8px}
+  table{min-width:0;font-size:10px}
+  th{background:#eee;color:#000}
+  th,td{border:1px solid #999}
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="mark" aria-hidden="true">
+      <svg width="26" height="26" viewBox="34 26 56 56"><path fill="#fff" d="M38 28h32q4 0 4 4v44q0 4-4 4H38q-4 0-4-4V32q0-4 4-4z"/><path fill="#9fb3c8" d="M40 36h28v4H40zm0 9h22v4H40zm0 9h26v4H40z"/><path fill="#2e9e5e" d="M56 72v-6q0-3 3-3l5-1 4-4q1-1 3-1h7q2 0 3 1l3 4 2 1q2 0 2 3v6z"/></svg>
+    </div>
+    <div>
+      <h1>BizDrive 운행기록부</h1>
+      <p class="sub">업무용승용차 운행기록부 · 휴대폰 안에서만 만듭니다</p>
+    </div>
+  </header>
+
+  <section id="error" class="notice hidden" role="alert"></section>
+
+  <section id="intro" class="card hidden">
+    <h2>차 화면의 QR 을 찍어 주세요</h2>
+    <ol class="steps">
+      <li>차에서 BizDrive 앱의 <b>내보내기</b> 탭을 엽니다</li>
+      <li>휴대폰 카메라로 화면의 QR 을 찍습니다</li>
+      <li>이 페이지에서 엑셀(CSV)이나 PDF 로 서식을 받습니다</li>
+    </ol>
+    <p class="privacy">원장 데이터는 주소의 # 뒤에만 실려 서버로 보내지지 않습니다. 이 페이지는 받은 달을 이 휴대폰 브라우저에만 보관합니다.</p>
+  </section>
+
+  <section id="month" class="hidden">
+    <div class="card">
+      <h2 id="m-title"></h2>
+      <div class="kpis" id="m-kpis"></div>
+    </div>
+    <div id="m-warn"></div>
+    <div class="card">
+      <h2>서식 머리</h2>
+      <dl id="m-head"></dl>
+    </div>
+    <div class="card">
+      <h2>운행 내역</h2>
+      <div class="table-wrap"><table id="m-table"></table></div>
+    </div>
+    <div class="card no-print">
+      <h2>서식 받기</h2>
+      <div class="actions">
+        <button class="primary" id="csv-month">엑셀(CSV) 받기</button>
+        <button class="ghost" id="print">PDF 로 저장 · 인쇄</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="archive" class="card no-print hidden">
+    <h2>보관한 달</h2>
+    <ul class="months" id="a-list"></ul>
+    <div class="actions" id="a-actions"></div>
+    <p class="privacy">연말에는 사업연도의 달을 모두 찍은 뒤 합쳐서 받으세요. 보관한 달은 이 브라우저에만 있습니다.</p>
+    <div class="actions"><button class="ghost" id="a-clear">보관한 달 모두 지우기</button></div>
+  </section>
+</main>
+
+<script type="module">
+import { decode, toCsv, summarize, km, dateLabel, note, fiscalYearOf } from "./ledger.js";
+
+const $ = (id) => document.getElementById(id);
+const STORE = "bizdrive.months.v1";
+
+function loadStore() {
+  try { return JSON.parse(localStorage.getItem(STORE) || "{}"); } catch { return {}; }
+}
+function saveStore(s) {
+  try { localStorage.setItem(STORE, JSON.stringify(s)); return true; } catch { return false; }
+}
+const keyOf = (l) => `${l.year}-${String(l.month).padStart(2, "0")}`;
+
+function el(tag, attrs = {}, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  for (const c of kids) e.append(c instanceof Node ? c : document.createTextNode(c));
+  return e;
+}
+
+function download(name, text) {
+  const url = URL.createObjectURL(new Blob([text], { type: "text/csv;charset=utf-8" }));
+  const a = el("a", { href: url, download: name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function kpi(label, value, unit, color) {
+  const lab = el("span");
+  if (color) lab.append(el("i", { class: "dot", style: `background:${color}`, "aria-hidden": "true" }));
+  lab.append(label);
+  return el("div", { class: "kpi" }, el("b", {}, `${value}${unit}`), lab);
+}
+
+function showMonth(l) {
+  const s = summarize([l]);
+  $("m-title").textContent = `${l.year}년 ${l.month}월 운행기록`;
+  $("m-kpis").replaceChildren(
+    kpi("총주행", km(s.total), " km"),
+    kpi("출·퇴근용", km(s.commute), " km", "var(--commute)"),
+    kpi("일반 업무용", km(s.business), " km", "var(--business)"),
+    kpi("업무사용비율", s.ratio.toFixed(2), "%"),
+  );
+  const unclassified = l.rows.filter((r) => r.unclassified).length;
+  $("m-warn").replaceChildren(...(unclassified
+    ? [el("p", { class: "notice" }, `미분류가 섞인 날이 ${unclassified}일 있어요. 그 거리는 업무용에서 빠져 있어요. 차에서 확인한 뒤 QR 을 다시 찍으면 바뀝니다.`)]
+    : []));
+  const p = l.profile;
+  $("m-head").replaceChildren(
+    el("dt", {}, "법인명"), el("dd", {}, p.companyName),
+    el("dt", {}, "사업자등록번호"), el("dd", {}, p.bizRegNo || "—"),
+    el("dt", {}, "차종"), el("dd", {}, p.model),
+    el("dt", {}, "자동차등록번호"), el("dd", {}, p.plateNo),
+    el("dt", {}, "사업연도"), el("dd", {}, fiscalYearOf(l.year, l.month, p.fiscalYearStartMonth).label),
+  );
+  const head = el("tr", {}, ...["사용일자(요일)", "부서", "성명", "주행 전(km)", "주행 후(km)", "주행거리(km)", "출·퇴근용(km)", "일반 업무용(km)", "비고"]
+    .map((t) => el("th", { scope: "col" }, t)));
+  const body = l.rows.map((r) => el("tr", {},
+    el("td", {}, dateLabel(l.year, l.month, r.day)), el("td", {}, r.driver?.dept ?? ""), el("td", {}, r.driver?.name ?? "미지정"),
+    el("td", {}, km(r.start)), el("td", {}, km(r.end)), el("td", {}, km(r.distance)),
+    el("td", {}, km(r.commute)), el("td", {}, km(r.business)), el("td", { class: "flag" }, note(r))));
+  $("m-table").replaceChildren(el("thead", {}, head), el("tbody", {}, ...body));
+  $("csv-month").onclick = () => download(`운행기록부_${keyOf(l)}.csv`, toCsv([l]));
+  $("print").onclick = () => window.print();
+  $("month").classList.remove("hidden");
+}
+
+function showArchive() {
+  const store = loadStore();
+  const months = Object.values(store).sort((a, b) => a.year - b.year || a.month - b.month);
+  if (!months.length) { $("archive").classList.add("hidden"); return; }
+  $("a-list").replaceChildren(...months.map((l) => el("li", {},
+    el("span", {}, `${l.year}년 ${l.month}월 · ${l.profile.plateNo}`),
+    el("span", {}, `${km(summarize([l]).total)} km`))));
+  // 사업연도·차별로 묶어 합쳐 받는다
+  const groups = new Map();
+  for (const l of months) {
+    const fy = fiscalYearOf(l.year, l.month, l.profile.fiscalYearStartMonth);
+    const k = `${fy.key}|${l.profile.plateNo}`;
+    if (!groups.has(k)) groups.set(k, { label: `${fy.label} · ${l.profile.plateNo}`, key: fy.key, list: [] });
+    groups.get(k).list.push(l);
+  }
+  $("a-actions").replaceChildren(...[...groups.values()].map((g) => {
+    const b = el("button", { class: "primary" }, `${g.label} 합쳐 받기 (${g.list.length}개월)`);
+    b.onclick = () => download(`운행기록부_사업연도_${g.key}.csv`, toCsv(g.list));
+    return b;
+  }));
+  $("archive").classList.remove("hidden");
+}
+
+$("a-clear").onclick = () => {
+  if (confirm("이 브라우저에 보관한 달을 모두 지울까요?")) { saveStore({}); showArchive(); }
+};
+
+async function main() {
+  const hash = location.hash.slice(1);
+  if (!hash) { $("intro").classList.remove("hidden"); showArchive(); return; }
+  try {
+    const l = await decode(decodeURIComponent(hash));
+    const store = loadStore();
+    store[`${keyOf(l)}|${l.profile.plateNo}`] = l;
+    saveStore(store);
+    // 주소창·방문 기록에 원장이 남지 않게 # 뒤를 지운다(보관한 달에서 다시 볼 수 있다)
+    history.replaceState(null, "", location.pathname + location.search);
+    showMonth(l);
+  } catch (e) {
+    const err = $("error");
+    err.textContent = `QR 을 읽지 못했어요. ${e?.message || ""}. 차 화면의 QR 을 다시 찍어 주세요.`;
+    err.classList.remove("hidden");
+    $("intro").classList.remove("hidden");
+  }
+  showArchive();
+}
+main();
+</script>
+</body>
+</html>
